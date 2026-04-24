@@ -1,0 +1,20 @@
+# Build outputs
+build/
+.gradle/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Android Studio
+.idea/
+*.iml
+local.properties
+.DS_Store
+
+# Kotlin
+*.class
+*.kotlin_module
+
+# Claude Code
+.claude/
