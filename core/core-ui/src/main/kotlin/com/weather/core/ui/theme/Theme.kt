@@ -5,8 +5,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val WeatherColorScheme = lightColorScheme(
-    primary = DeepBlue,
-    onPrimary = androidx.compose.ui.graphics.Color.White,
+    primary = DeepBlue, // 主要按鈕跟選中項目
+    onPrimary = androidx.compose.ui.graphics.Color.White, // 按鈕上的字
     primaryContainer = SkyBlue,
     onPrimaryContainer = NightBlue,
     secondary = SkyBlue,

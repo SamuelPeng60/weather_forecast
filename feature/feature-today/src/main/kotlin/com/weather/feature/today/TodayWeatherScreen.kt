@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,36 +27,17 @@ import com.weather.core.domain.model.CurrentWeather
 import com.weather.core.ui.component.ErrorScreen
 import com.weather.core.ui.component.LoadingScreen
 
-// ════════════════════════════════════════════════════════
-//  Feature Module — feature-today
-//  Jetpack Compose UI 層
-//
-//  Compose 的核心概念：
-//  - 用「描述」取代「命令」：你告訴 Compose 畫面長什麼樣，
-//    它自動知道什麼時候要更新哪些部分
-//  - 函式加上 @Composable 就能變成 UI 元件
-//  - State 改變 → Compose 自動重新執行受影響的 @Composable
-// ════════════════════════════════════════════════════════
-
 // [Jetpack Compose] @Composable：
 // 標記這個函式是 Compose UI 元件，只能在其他 @Composable 內呼叫
 @Composable
 fun TodayWeatherScreen(
-    // [Jetpack Compose + Hilt] hiltViewModel()：
-    // 自動建立並注入 ViewModel，與當前頁面生命週期綁定
     viewModel: TodayWeatherViewModel = hiltViewModel()
 ) {
-    // [Coroutines + Compose] collectAsStateWithLifecycle：
-    // 把 StateFlow 轉成 Compose 的 State
-    // 頁面不可見時自動暫停收集，省電省資源
-    // `by` 是委託語法，state 會自動解包 State 物件
+    // 把 StateFlow -> Compose 的 State, WithLifecycle-> 頁面不見就暫停收集
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // [Jetpack Compose] LaunchedEffect：
-    // 在 Composable 中安全地啟動協程
-    // key = Unit 代表只在這個元件「第一次顯示」時執行一次
     LaunchedEffect(Unit) {
-        // 持續收集一次性事件（Effect），例如顯示錯誤 Toast
+        // 一次性事件 ex:錯誤 Toast
         viewModel.effect.collect { effect ->
             when (effect) {
                 is TodayWeatherContract.Effect.ShowError -> { /* 可在這裡顯示 Snackbar */ }
@@ -63,8 +45,6 @@ fun TodayWeatherScreen(
         }
     }
 
-    // [Jetpack Compose] 根據 state 決定顯示哪個畫面
-    // 這就是「狀態驅動 UI」：state 是什麼，畫面就長什麼樣
     when {
         state.isLoading -> LoadingScreen()
         state.error != null -> ErrorScreen(
@@ -78,8 +58,6 @@ fun TodayWeatherScreen(
     }
 }
 
-// [Jetpack Compose] private fun：這個 Composable 只在這個檔案內使用
-// 把複雜的 UI 拆成小函式，每個函式只負責一件事
 @Composable
 private fun TodayWeatherContent(
     weather: CurrentWeather,
@@ -91,14 +69,13 @@ private fun TodayWeatherContent(
         Color(0xFF90CAF9)
     )
 
-    // [Jetpack Compose] Box：讓子元素可以疊在一起（類似 FrameLayout）
     Box(
         modifier = Modifier
             .fillMaxSize()
             // Modifier：修飾元件的外觀和行為，可以連續串接
             .background(Brush.verticalGradient(gradientColors))
     ) {
-        // [Jetpack Compose] Column：垂直排列子元件（類似 LinearLayout vertical）
+        // 類似 LinearLayout vertical
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -148,7 +125,7 @@ private fun TodayWeatherContent(
 
             Spacer(Modifier.height(40.dp))
 
-            // [Jetpack Compose] Card：Material3 的卡片元件
+            // Card是Material 的卡片元件
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -164,9 +141,9 @@ private fun TodayWeatherContent(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     WeatherDetailItem(icon = Icons.Default.WaterDrop, label = "濕度", value = "${weather.humidity}%")
-                    Divider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.height(60.dp).width(1.dp))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.height(60.dp).width(1.dp))
                     WeatherDetailItem(icon = Icons.Default.Air, label = "風速", value = "${weather.windSpeed} km/h")
-                    Divider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.height(60.dp).width(1.dp))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.3f), modifier = Modifier.height(60.dp).width(1.dp))
                     WeatherDetailItem(icon = Icons.Default.Thermostat, label = "體感", value = "${weather.feelsLike.toInt()}°C")
                 }
             }
@@ -192,8 +169,7 @@ private fun TodayWeatherContent(
     }
 }
 
-// [Jetpack Compose] 可重複使用的小元件
-// 把「圖示 + 數值 + 標籤」這個組合抽出來，避免重複程式碼
+// 組合相同 可以抽出避免重複
 @Composable
 private fun WeatherDetailItem(
     icon: ImageVector,

@@ -16,9 +16,10 @@ fun CurrentDto.toDomain(cityName: String): CurrentWeather = CurrentWeather(
     description = weatherCode.toWeatherDescription(),
     emoji = weatherCode.toWeatherEmoji(),
     updateTime = time.replace("T", " ")
+    // "2026-04-25T22:00" → "2026-04-25 22:00"
 )
 
-fun DailyDto.toDomain(): List<DailyForecast> {
+fun DailyDto.toDomain(): List<DailyForecast> { // 週預報轉換
     return time.indices.map { i ->
         DailyForecast(
             date = time[i],
@@ -34,9 +35,10 @@ fun DailyDto.toDomain(): List<DailyForecast> {
 }
 
 private fun String.toDayOfWeekZh(): String {
-    val parts = split("-")
+    val parts = split("-") //  "2026-04-25" → ["2026", "04", "25"]
     if (parts.size < 3) return ""
     val cal = Calendar.getInstance().apply {
+        // Calendar 是 0~6，所以月份要-1
         set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
     }
     return when (cal.get(Calendar.DAY_OF_WEEK)) {

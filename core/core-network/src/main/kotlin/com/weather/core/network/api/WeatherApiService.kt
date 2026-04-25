@@ -6,6 +6,15 @@ import retrofit2.http.Query
 
 interface WeatherApiService {
 
+    /*
+        https://api.open-meteo.com/v1/forecast
+        ?latitude=25.0478
+        &longitude=121.5319
+        &current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code
+        &daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum
+        &timezone=Asia/Taipei
+        &forecast_days=7
+    */
     @GET("v1/forecast")
     suspend fun getWeather(
         @Query("latitude") latitude: Double,

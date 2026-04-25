@@ -6,11 +6,7 @@ import com.weather.core.domain.model.DailyForecast
 import com.weather.core.domain.repository.WeatherRepository
 import javax.inject.Inject
 
-// ════════════════════════════════════════════════════════
-//  Clean Architecture — Use Case（Domain 層）
-//  業務動作：「取得七天週預報」
-// ════════════════════════════════════════════════════════
-
+//  取得一週預報
 class GetWeeklyForecastUseCase @Inject constructor(
     private val repository: WeatherRepository
 ) {

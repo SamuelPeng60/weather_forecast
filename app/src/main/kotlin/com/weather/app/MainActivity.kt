@@ -8,7 +8,7 @@ import com.weather.app.navigation.AppNavigation
 import com.weather.core.ui.theme.WeatherTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
+@AndroidEntryPoint //  跟 Hilt 說這個 Activity 需要 di
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

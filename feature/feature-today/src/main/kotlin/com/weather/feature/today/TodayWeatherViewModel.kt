@@ -30,30 +30,21 @@ class TodayWeatherViewModel @Inject constructor(
     private val selectedCityRepository: SelectedCityRepository
 ) : ViewModel() {
 
-    // [Coroutines — MutableStateFlow] 私有可寫的狀態
     private val _state = MutableStateFlow(TodayWeatherContract.State())
-    // 對外只暴露唯讀的 StateFlow，Compose 訂閱這個來更新畫面
+    // 外部state: read only
     val state: StateFlow<TodayWeatherContract.State> = _state.asStateFlow()
-
-    // [Coroutines — MutableSharedFlow] 用於一次性事件（Effect）
-    // SharedFlow 不會保留舊值，適合「顯示一次 Toast」這類操作
     private val _effect = MutableSharedFlow<TodayWeatherContract.Effect>()
     val effect: SharedFlow<TodayWeatherContract.Effect> = _effect.asSharedFlow()
 
-    init {
-        // [Coroutines] viewModelScope.launch：
-        // 在 ViewModel 的生命週期內啟動一個協程
-        // ViewModel 被清除時，這個協程會自動取消，不會造成記憶體洩漏
+    init { // 一開始收到初始值(台北) 就會刷新UI
         viewModelScope.launch {
-            // [Coroutines] collect：持續監聽 StateFlow 的值
-            // 每當城市切換，這裡就會收到新城市並重新載入天氣
             selectedCityRepository.selectedCity.collect { city ->
                 loadWeather(city)
             }
         }
     }
 
-    // 處理來自 UI 的使用者動作（Intent）
+    // UI 來的 intent
     fun processIntent(intent: TodayWeatherContract.Intent) {
         when (intent) {
             is TodayWeatherContract.Intent.Refresh -> {
@@ -64,20 +55,17 @@ class TodayWeatherViewModel @Inject constructor(
     }
 
     private fun loadWeather(city: City) {
-        // [Coroutines] launch：啟動新協程執行網路請求
-        // 不會阻塞 UI，請求進行中 App 仍然可以回應使用者操作
         viewModelScope.launch {
             // update{}：原子性地更新 StateFlow，Compose 收到後重新繪製
             _state.update { it.copy(isLoading = true, error = null, selectedCity = city) }
 
-            // [Coroutines] 呼叫 suspend fun，在這裡「暫停」等待網路回應
+            // Loading中顯示，直到抓到以後就會回應
             when (val result = getCurrentWeatherUseCase(city)) {
                 is Result.Success -> {
                     _state.update { it.copy(isLoading = false, currentWeather = result.data) }
                 }
                 is Result.Error -> {
                     _state.update { it.copy(isLoading = false, error = result.message) }
-                    // emit：發送一次性事件給 UI（例如顯示 Snackbar）
                     _effect.emit(TodayWeatherContract.Effect.ShowError(result.message))
                 }
             }

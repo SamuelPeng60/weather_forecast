@@ -11,20 +11,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// ════════════════════════════════════════════════════════
-//  Feature Module — feature-weekly
-//  週預報 ViewModel（邏輯與 TodayWeatherViewModel 相同模式）
-//
-//  [Coroutines 資料流]
-//  SelectedCityRepository.selectedCity (StateFlow)
-//       ↓ collect（持續監聽）
-//  loadForecast(city)
-//       ↓ launch（啟動協程）
-//  getWeeklyForecastUseCase(city)（suspend，等待網路）
-//       ↓
-//  _state.update（更新狀態，Compose 自動重繪）
-// ════════════════════════════════════════════════════════
-
 @HiltViewModel
 class WeeklyForecastViewModel @Inject constructor(
     private val getWeeklyForecastUseCase: GetWeeklyForecastUseCase,
@@ -38,8 +24,6 @@ class WeeklyForecastViewModel @Inject constructor(
     val effect: SharedFlow<WeeklyForecastContract.Effect> = _effect.asSharedFlow()
 
     init {
-        // [Coroutines] 訂閱城市切換事件
-        // 當 CityListScreen 切換城市時，這裡會自動收到通知並重新載入週預報
         viewModelScope.launch {
             selectedCityRepository.selectedCity.collect { city ->
                 loadForecast(city)
@@ -57,7 +41,6 @@ class WeeklyForecastViewModel @Inject constructor(
     }
 
     private fun loadForecast(city: City) {
-        // [Coroutines] 在背景協程中發起網路請求，不阻塞 UI
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null, selectedCity = city) }
             when (val result = getWeeklyForecastUseCase(city)) {

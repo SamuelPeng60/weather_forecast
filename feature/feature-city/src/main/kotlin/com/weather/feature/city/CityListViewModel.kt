@@ -10,15 +10,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// ════════════════════════════════════════════════════════
-//  Feature Module — feature-city
-//  城市列表 ViewModel
-//
-//  這個 ViewModel 做兩件事：
-//  1. 載入城市清單並依國家分組
-//  2. 選擇城市時更新 SelectedCityRepository 的 StateFlow，
-//     讓 TodayWeather 和 WeeklyForecast 自動收到通知並刷新
-// ════════════════════════════════════════════════════════
 
 @HiltViewModel
 class CityListViewModel @Inject constructor(
@@ -35,10 +26,8 @@ class CityListViewModel @Inject constructor(
     val effect: SharedFlow<CityListContract.Effect> = _effect.asSharedFlow()
 
     init {
-        // 城市清單是靜態資料，不需要協程，直接取得
         val cities = getCitiesUseCase()
-        // groupBy：Kotlin 集合函式，按照 country 欄位分組
-        // 結果例如：{"台灣": [台北, 台中, 高雄], "日本": [東京, 大阪]}
+        // ex: {"台灣": [台北, 台中, 高雄], "日本": [東京, 大阪] ...}
         val grouped = cities.groupBy { it.country }
 
         // [Coroutines] 訂閱目前選中的城市（用來顯示 CheckCircle 標記）
@@ -58,13 +47,10 @@ class CityListViewModel @Inject constructor(
     fun processIntent(intent: CityListContract.Intent) {
         when (intent) {
             is CityListContract.Intent.SelectCity -> {
-                // [Coroutines — StateFlow] 這一行是整個城市切換的核心！
-                // 呼叫後，SelectedCityRepository 的 StateFlow 值更新，
-                // TodayWeatherViewModel 和 WeeklyForecastViewModel 的 collect{} 都會觸發，
-                // 自動重新載入新城市的天氣資料
+                // UseCase -> repository state flow update -> 另外兩頁也刷新
                 selectCityUseCase(intent.city)
 
-                // [Coroutines] 發送一次性 Effect 通知 UI（城市已選擇）
+                // 通知UI
                 viewModelScope.launch {
                     _effect.emit(CityListContract.Effect.CitySelected(intent.city))
                 }
